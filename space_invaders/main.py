@@ -68,34 +68,66 @@ class Sprite:
 
         display.update()
 
+    def remove_sprite(self):
+        self.draw_sprite(colour=BACKGROUND_COLOUR)
+        display.update()
+
+
+class Row:
+    def __init__(
+        self,
+        start_y,
+        number,
+        colour={"r": 255, "g": 255, "b": 255}
+    ):
+        self._x = WIDTH // number
+        self._y = start_y
+        self.dx = 0
+        self.dy = 0
+        self.colour = colour
+        self.invaders = []
+        for i in range(number):
+            self.invaders.append(
+                Sprite(start_x=self._x * (i + 1),
+                       start_y=self._y))
+
+    def update(self):
+        # update row of invaders
+        for invader in self.invaders:
+            invader.dx = self.dx
+            invader.dy = self.dy
+            invader.update()
+
+        # update position
+        self._x += self.dx
+        self._y += self.dy
+        self.dx = self.dy = 0
+
 
 def game_loop(sprite, step_time, step_size):
     while True:
-        moved = True
         if display.is_pressed(display.BUTTON_A):
-            sprite.x += step_size
+            sprite.dx += step_size
         elif display.is_pressed(display.BUTTON_B):
-            sprite.x -= step_size
+            sprite.dx -= step_size
         elif display.is_pressed(display.BUTTON_X):
-            sprite.y += step_size
+            sprite.dy += step_size
         elif display.is_pressed(display.BUTTON_Y):
-            sprite.y -= step_size
-        else:
-            moved = False
+            sprite.dy -= step_size
 
-        if moved:
-            sprite.update()
-            sleep(step_time)
+        sprite.update()
+        sleep(step_time)
 
 
 if __name__ == "__main__":
-    width = display.get_width()
-    height = display.get_height()
-    display_buffer = bytearray(width * height * 2)
+    global WIDTH, HEIGHT
+    WIDTH = display.get_width()
+    HEIGHT = display.get_height()
+    display_buffer = bytearray(WIDTH * HEIGHT * 2)
     display.init(display_buffer)
     display.set_backlight(1.0)
 
     # initialise sprite
-    sprite = Sprite()
+    sprite = Row(start_y=65, number=5)
     sprite.update()
     game_loop(sprite, 0.2, 5)
