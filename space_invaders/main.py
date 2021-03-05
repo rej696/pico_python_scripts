@@ -45,6 +45,26 @@ player_map = [
 ]
 
 
+projectile_map = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+
 class Sprite:
     def __init__(
             self,
@@ -86,11 +106,11 @@ class Sprite:
         # draw sprite at new location
         self.draw_sprite(colour=self.colour)
 
-        display.update()
+        # display.update()
 
     def remove_sprite(self):
         self.draw_sprite(colour=BACKGROUND_COLOUR)
-        display.update()
+        # display.update()
 
 
 class Row:
@@ -109,8 +129,9 @@ class Row:
         self.invaders = []
         for i in range(number):
             self.invaders.append(
-                Sprite(start_x=self._x * (i + 1),
-                       start_y=self._y))
+                Sprite(start_x=self._x * i,
+                       start_y=self._y,
+                       colour=colour))
 
     def update(self):
         # update row of invaders
@@ -139,16 +160,70 @@ class Row:
             self.update()
 
 
+class Projectile(Sprite):
+    def __init__(
+        self,
+        start_x,
+        start_y,
+        pixel_map=projectile_map,
+        colour={"r": 255, "g": 0, "b": 0}
+    ):
+        super().__init__(
+            start_x=start_x,
+            start_y=start_y,
+            pixel_map=pixel_map,
+            colour=colour
+        )
+
+    def move(self, step_size):
+        self.dy -= step_size
+        self.update()
+
+
+class Player(Sprite):
+    def __init__(
+        self,
+        start_x=120,
+        start_y=67,
+        pixel_map=space_invader_map,
+        colour={"r": 255, "g": 255, "b": 255}
+    ):
+        super().__init__(
+            start_x=start_x,
+            start_y=start_y,
+            pixel_map=pixel_map,
+            colour=colour
+        )
+
+    def fire_projectile(self, colour={"r": 0, "g": 255, "b": 0}):
+        projectile = Projectile(
+            start_x=self._x,
+            start_y=self._y,
+            pixel_map=projectile_map,
+            colour=colour
+        )
+        return projectile
+
+def clear_display():
+    display.set_pen(
+        BACKGROUND_COLOUR["r"],
+        BACKGROUND_COLOUR["g"],
+        BACKGROUND_COLOUR["b"]
+    )
+    display.clear()
+    display.update()
+
+
 def game_loop(step_time, step_size):
     # initialise objects
     enemy_row = Row(
-        start_y=65,
+        start_y=0,
         number=5,
         colour={"r": 0, "g": 0, "b": 255}
     )
-    player = Sprite(
+    player = Player(
         start_x=120,
-        start_y=100,
+        start_y=110,
         pixel_map=player_map,
         colour={"r": 255, "g": 0, "b": 0}
     )
@@ -156,6 +231,8 @@ def game_loop(step_time, step_size):
     player.update()
 
     # Loop
+    count = 0
+    projectiles = []
     while True:
         if display.is_pressed(display.BUTTON_Y):
             player.dx += step_size
@@ -163,13 +240,26 @@ def game_loop(step_time, step_size):
             player.dx -= step_size
         elif display.is_pressed(display.BUTTON_X):
             # fire projectile
+            projectiles.append(player.fire_projectile())
             pass
         elif display.is_pressed(display.BUTTON_A):
             # reset game state/return and display final score?
+            clear_display()
             return None
 
         player.update()
-        enemy_row.move(step_size)
+        
+        # move enemy every 5 steps
+        if count % 5 == 0:
+            enemy_row.move(step_size)
+
+        if projectiles:
+            for projectile in projectiles:
+                projectile.move(step_size)
+
+        count = count + 1 if count < 256 else 0
+
+        display.update()
         sleep(step_time)
 
 
@@ -180,6 +270,7 @@ if __name__ == "__main__":
     display_buffer = bytearray(WIDTH * HEIGHT * 2)
     display.init(display_buffer)
     display.set_backlight(1.0)
+    clear_display()
 
     # Game_loop
     while True:
