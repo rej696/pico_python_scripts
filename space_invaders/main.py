@@ -25,6 +25,26 @@ space_invader_map = [
 ]
 
 
+player_map = [
+    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1],
+    [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+]
+
+
 class Sprite:
     def __init__(
             self,
@@ -85,6 +105,7 @@ class Row:
         self.dx = 0
         self.dy = 0
         self.colour = colour
+        self.location = 0
         self.invaders = []
         for i in range(number):
             self.invaders.append(
@@ -103,19 +124,52 @@ class Row:
         self._y += self.dy
         self.dx = self.dy = 0
 
+    def move(self, step_size):
+        if 0 <= self.location < 5:
+            self.dx += step_size
+            self.location += 1
+            self.update()
+        elif -5 <= self.location < 0:
+            self.dx -= step_size
+            self.location -= 1
+            self.update()
+        else:
+            self.dy += step_size
+            self.location = 0 if self.location < 0 else -1
+            self.update()
 
-def game_loop(sprite, step_time, step_size):
+
+def game_loop(step_time, step_size):
+    # initialise objects
+    enemy_row = Row(
+        start_y=65,
+        number=5,
+        colour={"r": 0, "g": 0, "b": 255}
+    )
+    player = Sprite(
+        start_x=120,
+        start_y=100,
+        pixel_map=player_map,
+        colour={"r": 255, "g": 0, "b": 0}
+    )
+    enemy_row.update()
+    player.update()
+
+    # Loop
     while True:
-        if display.is_pressed(display.BUTTON_A):
-            sprite.dx += step_size
+        if display.is_pressed(display.BUTTON_Y):
+            player.dx += step_size
         elif display.is_pressed(display.BUTTON_B):
-            sprite.dx -= step_size
+            player.dx -= step_size
         elif display.is_pressed(display.BUTTON_X):
-            sprite.dy += step_size
-        elif display.is_pressed(display.BUTTON_Y):
-            sprite.dy -= step_size
+            # fire projectile
+            pass
+        elif display.is_pressed(display.BUTTON_A):
+            # reset game state/return and display final score?
+            return None
 
-        sprite.update()
+        player.update()
+        enemy_row.move(step_size)
         sleep(step_time)
 
 
@@ -127,7 +181,6 @@ if __name__ == "__main__":
     display.init(display_buffer)
     display.set_backlight(1.0)
 
-    # initialise sprite
-    sprite = Row(start_y=65, number=5)
-    sprite.update()
-    game_loop(sprite, 0.2, 5)
+    # Game_loop
+    while True:
+        game_loop(0.2, 5)
