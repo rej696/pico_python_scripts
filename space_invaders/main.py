@@ -48,7 +48,7 @@ class Sprite:
         )
 
         for dy, row in enumerate(self.pixel_map):
-            for dx, pixel in enumerate(self.pixel_map):
+            for dx, pixel in enumerate(row):
                 if pixel:
                     display.pixel(self._x + dx, self._y + dy)
 
